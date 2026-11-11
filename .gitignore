@@ -1,0 +1,25 @@
+# .NET
+bin/
+obj/
+*.user
+.vs/
+
+# Java
+target/
+*.class
+
+# Flutter
+.dart_tool/
+build/
+.flutter-plugins
+
+# Segredos — NUNCA commitar
+.env
+appsettings.Development.json
+application-local.properties
+*.pem
+*.key
+
+# Sistema
+.DS_Store
+Thumbs.db
