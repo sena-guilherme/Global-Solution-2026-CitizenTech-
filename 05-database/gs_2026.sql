@@ -1,9 +1,11 @@
 -- ============================================================
 -- GLOBAL SOLUTION 2026/2 - CITIZENTECH
 -- Disciplina: Mastering Relational and Non-Relational Database
--- Arquivo unico: DDL + DML + PL/SQL + Cursor + Procedures
--- Executar na ordem: 1) DDL  2) DML  3) Blocos  4) Cursor/Procedures
+-- Arquivo unico com MARCADORES DE EVIDENCIA.
+-- Cada evidencia comeca e termina com uma moldura de ###.
 -- ============================================================
+
+SET SERVEROUTPUT ON SIZE UNLIMITED;
 
 -- ============================================================
 -- PARTE 1 - DDL: CRIACAO DO MODELO DE DADOS
@@ -197,10 +199,24 @@ INSERT INTO PUBLICACAO (id_produtor, texto, cultura, regiao, confirmacoes) VALUE
 COMMIT;
 
 -- ============================================================
--- PARTE 3 - BLOCO ANONIMO, IF/ELSIF/ELSE E REPETICAO
+-- PARTE 3 - EVIDENCIA 1: MODELO DE DADOS E CARGA
+-- ============================================================
+-- EVIDENCIA 1 - MODELO DE DADOS E CARGA (10 pts)
+-- O que comprova: 6 tabelas relacionadas com no minimo 10 linhas cada.
+-- IMPORTANTE: este bloco e um SELECT puro, nao imprime marcador.
+-- Tire o print do RESULTADO da query (aba de resultados), nao do DBMS_OUTPUT.
 -- ============================================================
 
-SET SERVEROUTPUT ON SIZE UNLIMITED;
+SELECT 'PRODUTOR' AS tabela, COUNT(*) AS qtd FROM PRODUTOR
+UNION ALL SELECT 'AREA', COUNT(*) FROM AREA
+UNION ALL SELECT 'CULTURA', COUNT(*) FROM CULTURA
+UNION ALL SELECT 'LEITURA_SOLO', COUNT(*) FROM LEITURA_SOLO
+UNION ALL SELECT 'ALERTA', COUNT(*) FROM ALERTA
+UNION ALL SELECT 'PUBLICACAO', COUNT(*) FROM PUBLICACAO;
+
+-- ============================================================
+-- PARTE 4 - EVIDENCIA 2: BLOCO ANONIMO COM SELECT INTO
+-- ============================================================
 
 DECLARE
     v_id_area        AREA.id_area%TYPE := 1;
@@ -210,6 +226,12 @@ DECLARE
     v_classificacao  VARCHAR2(30);
     v_recomendacao   VARCHAR2(200);
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 2 - BLOCO ANONIMO + SELECT INTO          ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: variaveis, SELECT INTO e DBMS_OUTPUT    ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
     SELECT nome
       INTO v_nome_area
       FROM AREA
@@ -247,6 +269,10 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('Recomendacao.....: ' || v_recomendacao);
     DBMS_OUTPUT.PUT_LINE('=========================================');
 
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 2                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
 EXCEPTION
     WHEN NO_DATA_FOUND THEN
         DBMS_OUTPUT.PUT_LINE('ERRO: Nenhuma leitura encontrada para a area ' || v_id_area);
@@ -255,6 +281,73 @@ EXCEPTION
 END;
 /
 
+-- ============================================================
+-- PARTE 5 - EVIDENCIA 3: DECISAO IF/ELSIF/ELSE
+-- ============================================================
+
+DECLARE
+    v_umidade        LEITURA_SOLO.valor_umidade%TYPE;
+    v_nome_area      AREA.nome%TYPE;
+    v_classificacao  VARCHAR2(30);
+    v_acao           VARCHAR2(200);
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 3 - DECISAO IF/ELSIF/ELSE                ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: decisao aplicada a regra de negocio      ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
+    FOR r_area IN (SELECT a.id_area, a.nome
+                     FROM AREA a
+                    WHERE a.id_area IN (1, 3, 6, 10)
+                    ORDER BY a.id_area)
+    LOOP
+        BEGIN
+            SELECT valor_umidade
+              INTO v_umidade
+              FROM LEITURA_SOLO
+             WHERE id_area = r_area.id_area
+               AND data_hora = (SELECT MAX(data_hora)
+                                  FROM LEITURA_SOLO
+                                 WHERE id_area = r_area.id_area);
+
+            IF v_umidade < 20 THEN
+                v_classificacao := 'CRITICO';
+                v_acao := 'Irrigacao urgente. Risco alto de perda da safra.';
+            ELSIF v_umidade < 35 THEN
+                v_classificacao := 'MODERADO';
+                v_acao := 'Irrigar nas proximas 24 horas.';
+            ELSIF v_umidade <= 70 THEN
+                v_classificacao := 'NORMAL';
+                v_acao := 'Umidade adequada. Manter monitoramento.';
+            ELSE
+                v_classificacao := 'EXCESSO';
+                v_acao := 'Solo encharcado. Suspender irrigacao.';
+            END IF;
+
+            DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+            DBMS_OUTPUT.PUT_LINE('Area.............: ' || r_area.nome);
+            DBMS_OUTPUT.PUT_LINE('Umidade do solo..: ' || v_umidade || '%');
+            DBMS_OUTPUT.PUT_LINE('Classificacao....: ' || v_classificacao);
+            DBMS_OUTPUT.PUT_LINE('Acao.............: ' || v_acao);
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                DBMS_OUTPUT.PUT_LINE('Area ' || r_area.nome || ' - SEM LEITURA');
+        END;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('As 4 faixas foram demonstradas acima.');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 3                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+END;
+/
+
+-- ============================================================
+-- PARTE 6 - EVIDENCIA 4: REPETICAO FOR
+-- ============================================================
+
 DECLARE
     v_umidade       LEITURA_SOLO.valor_umidade%TYPE;
     v_classificacao VARCHAR2(30);
@@ -262,6 +355,12 @@ DECLARE
     v_total_moderado NUMBER := 0;
     v_total_normal  NUMBER := 0;
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 4 - REPETICAO FOR                        ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: repeticao com processamento funcional    ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
     DBMS_OUTPUT.PUT_LINE('=========================================');
     DBMS_OUTPUT.PUT_LINE('CLASSIFICACAO DE TODAS AS AREAS');
     DBMS_OUTPUT.PUT_LINE('=========================================');
@@ -306,13 +405,27 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('TOTAL MODERADO.: ' || v_total_moderado);
     DBMS_OUTPUT.PUT_LINE('TOTAL NORMAL...: ' || v_total_normal);
     DBMS_OUTPUT.PUT_LINE('=========================================');
+
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 4                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
 END;
 /
+
+-- ============================================================
+-- PARTE 7 - EVIDENCIA 5: REPETICAO WHILE
+-- ============================================================
 
 DECLARE
     v_ciclo         NUMBER := 1;
     v_areas_criticas NUMBER;
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 5 - REPETICAO WHILE                      ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: repeticao com processamento funcional    ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
     DBMS_OUTPUT.PUT_LINE('=========================================');
     DBMS_OUTPUT.PUT_LINE('SIMULACAO DE CICLOS DE IRRIGACAO');
     DBMS_OUTPUT.PUT_LINE('=========================================');
@@ -325,9 +438,11 @@ BEGIN
                             FROM LEITURA_SOLO l2
                            WHERE l2.id_area = l.id_area);
 
+    DBMS_OUTPUT.PUT_LINE('Areas criticas identificadas: ' || v_areas_criticas);
+
     WHILE v_ciclo <= 5 LOOP
         DBMS_OUTPUT.PUT_LINE('Ciclo ' || v_ciclo ||
-                             ' - Areas criticas no inicio: ' || v_areas_criticas);
+                             ' - Areas criticas restantes: ' || v_areas_criticas);
         v_areas_criticas := v_areas_criticas - 1;
         IF v_areas_criticas < 0 THEN
             v_areas_criticas := 0;
@@ -338,11 +453,15 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
     DBMS_OUTPUT.PUT_LINE('Fim da simulacao. Areas criticas restantes: ' || v_areas_criticas);
     DBMS_OUTPUT.PUT_LINE('=========================================');
+
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 5                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
 END;
 /
 
 -- ============================================================
--- PARTE 4 - CURSOR EXPLICITO E PROCEDIMENTOS ARMAZENADOS
+-- PARTE 8 - EVIDENCIA 6: CURSOR EXPLICITO
 -- ============================================================
 
 DECLARE
@@ -365,6 +484,12 @@ DECLARE
     v_registro   c_areas_criticas%ROWTYPE;
     v_contador   NUMBER := 0;
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 6 - CURSOR EXPLICITO                     ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: cursor com leitura de registros          ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
     DBMS_OUTPUT.PUT_LINE('=========================================');
     DBMS_OUTPUT.PUT_LINE('AREAS COM UMIDADE CRITICA (abaixo de 20%)');
     DBMS_OUTPUT.PUT_LINE('=========================================');
@@ -389,8 +514,16 @@ BEGIN
 
     DBMS_OUTPUT.PUT_LINE('Total de areas criticas: ' || v_contador);
     DBMS_OUTPUT.PUT_LINE('=========================================');
+
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 6                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
 END;
 /
+
+-- ============================================================
+-- PARTE 9 - EVIDENCIA 7: PROCEDIMENTOS ARMAZENADOS
+-- ============================================================
 
 CREATE OR REPLACE PROCEDURE sp_registrar_leitura (
     p_id_area       IN NUMBER,
@@ -519,12 +652,33 @@ EXCEPTION
 END;
 /
 
--- ============================================================
--- PARTE 5 - TESTES DAS PROCEDURES
--- ============================================================
+-- ------------------------------------------------------------
+-- Execucao das duas procedures (EVIDENCIA 7)
+-- ------------------------------------------------------------
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  EVIDENCIA 7 - PROCEDIMENTOS ARMAZENADOS            ###');
+    DBMS_OUTPUT.PUT_LINE('###  Requisito: 2 procedures executaveis                ###');
+    DBMS_OUTPUT.PUT_LINE('###  PRINT A PARTIR DAQUI                               ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+
+    DBMS_OUTPUT.PUT_LINE('>>> PROCEDIMENTO 1 DE 2: sp_registrar_leitura (OPERACAO)');
+    DBMS_OUTPUT.PUT_LINE('>>> Insere uma leitura de 17.5% na area 1 e gera alerta automatico');
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+END;
+/
 
 BEGIN
     sp_registrar_leitura(1, 17.5, 'SENSOR', 'ARD-001');
+END;
+/
+
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('>>> PROCEDIMENTO 2 DE 2: sp_relatorio_produtor (CONSULTA)');
+    DBMS_OUTPUT.PUT_LINE('>>> Relatorio consolidado do produtor 1');
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
 END;
 /
 
@@ -534,12 +688,40 @@ END;
 /
 
 BEGIN
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+    DBMS_OUTPUT.PUT_LINE('>>> Segundo exemplo: relatorio do produtor 5');
+    DBMS_OUTPUT.PUT_LINE('-----------------------------------------');
+END;
+/
+
+BEGIN
     sp_relatorio_produtor(5);
 END;
 /
 
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DA EVIDENCIA 7                                 ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+    DBMS_OUTPUT.PUT_LINE('###  FIM DO SCRIPT - 7 EVIDENCIAS GERADAS               ###');
+    DBMS_OUTPUT.PUT_LINE('###  1: Modelo e carga (print da aba de resultados)     ###');
+    DBMS_OUTPUT.PUT_LINE('###  2: Bloco anonimo + SELECT INTO                     ###');
+    DBMS_OUTPUT.PUT_LINE('###  3: Decisao IF/ELSIF/ELSE                           ###');
+    DBMS_OUTPUT.PUT_LINE('###  4: Repeticao FOR                                   ###');
+    DBMS_OUTPUT.PUT_LINE('###  5: Repeticao WHILE                                 ###');
+    DBMS_OUTPUT.PUT_LINE('###  6: Cursor explicito                                ###');
+    DBMS_OUTPUT.PUT_LINE('###  7: Procedimentos armazenados                       ###');
+    DBMS_OUTPUT.PUT_LINE('############################################################');
+END;
+/
+
 -- ============================================================
--- PARTE 6 - CONFERENCIA DA CARGA (10 LINHAS POR TABELA)
+-- PARTE 10 - CONFERENCIA FINAL DA CARGA
+-- ============================================================
+-- Rode este SELECT no final e tire um print extra.
+-- Ele mostra que a procedure inseriu uma leitura nova (LEITURA_SOLO = 13).
 -- ============================================================
 
 SELECT 'PRODUTOR' AS tabela, COUNT(*) AS qtd FROM PRODUTOR
