@@ -1,7 +1,8 @@
 -- ============================================================
 -- GLOBAL SOLUTION 2026/2 - CITIZENTECH
 -- Disciplina: Mastering Relational and Non-Relational Database
--- Arquivo unico com MARCADORES DE EVIDENCIA.
+-- Arquivo unico com MARCADORES DE EVIDENCIA
+-- Execute tudo de uma vez e tire os prints depois.
 -- Cada evidencia comeca e termina com uma moldura de ###.
 -- ============================================================
 
