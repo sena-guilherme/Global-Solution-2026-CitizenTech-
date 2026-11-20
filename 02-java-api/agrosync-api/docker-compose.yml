@@ -1,0 +1,49 @@
+# Sobe a API + PostgreSQL com um comando:   docker compose up -d --build
+# Antes:  cp .env.example .env   (e preencha DB_PASSWORD e JWT_SECRET)
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: agrosync-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: agrosync
+      POSTGRES_USER: ${DB_USER:-agrosync}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data      # volume nomeado: os dados sobrevivem a reinicios
+    networks:
+      - agronet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-agrosync} -d agrosync"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: .
+    container_name: agrosync-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy              # só inicia a API depois que o banco aceitar conexões
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/agrosync
+      DB_USER: ${DB_USER:-agrosync}
+      DB_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no arquivo .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-*}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-admin@agrosync.com}
+      SEED_ENABLED: ${SEED_ENABLED:-true}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads:/app/uploads                    # fotos da comunidade
+    networks:
+      - agronet
+
+volumes:
+  pgdata:
+  uploads:
+
+networks:
+  agronet:
