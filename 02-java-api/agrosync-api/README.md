@@ -15,9 +15,7 @@ O AgroSync ajuda o pequeno produtor rural a decidir **quando irrigar, colher ou 
 | Guilherme Sena | RM568101 | 2TDSPA |
 | Igor Dantas | RM568337 | 2TDSPA |
 
-- 🎬 **Vídeo pitch:** _colar o link aqui_
-- 📱 **Aplicativo mobile (Flutter):** _colar o link do repositório aqui_
-- 🗄️ **Banco de dados (Oracle/PL-SQL):** _colar o link do repositório aqui_
+- 🎬 **Vídeo pitch:** _https://youtu.be/B7kH1Rmyhtw_
 
 ## 📑 Sumário
 1. [Sobre o projeto](#-sobre-o-projeto)
