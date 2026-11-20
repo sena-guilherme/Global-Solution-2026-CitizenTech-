@@ -194,4 +194,4 @@ docker exec -it agrosync-db psql -U agrosync -d agrosync -c "SELECT * FROM area;
 
 ## 🎥 Link do Vídeo de Demonstração
 
-* **Demonstração Completa (YouTube — Não Listado):** `[INSERIR_LINK_DO_YOUTUBE_AQUI]`
+* **Demonstração Completa (YouTube — Não Listado):** `https://youtu.be/dcv3RaqJNok`
