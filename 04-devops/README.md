@@ -21,7 +21,7 @@
 O **AgroSync** é uma plataforma CitizenTech voltada ao registro, monitoramento e gestão colaborativa de áreas agrícolas e comunitárias. A aplicação utilizada nesta infraestrutura é a API RESTful desenvolvida em **Java 21 + Spring Boot**, contendo:
 * Autenticação e autorização via **JWT (Spring Security)**.
 * **CRUD completo** integrado a banco de dados relacional (**PostgreSQL 16**).
-* **Relacionamento entre tabelas** gerenciado via JPA/Hibernate (ex.: entidades `usuario` e `area` vinculadas por chave estrangeira, além de registros associados).
+* **Relacionamento entre tabelas** gerenciado via JPA/Hibernate (entidades `produtor`, `area`, `cultura`, `leitura_solo`, `alerta` e `publicacao` vinculadas por chaves estrangeiras).
 * Documentação interativa via **Swagger UI / OpenAPI** exposta publicamente na nuvem.
 
 ---
@@ -34,7 +34,7 @@ O **AgroSync** é uma plataforma CitizenTech voltada ao registro, monitoramento 
 1. **Cliente Externo (Navegador / Swagger UI):** Envia requisições HTTP REST para o IP Público da Azure (`20.164.209.121`) na porta `8080`.
 2. **Network Security Group (NSG):** Firewall gerenciado do Microsoft Azure com regra de entrada liberada na porta TCP `8080`.
 3. **Azure Virtual Machine (`vm-agrosync`):** Instância Ubuntu 22.04 LTS (`Standard_B2ls_v2`) provisionada via Azure CLI no Resource Group `rg-agrosync-devops`.
-4. **Docker Engine & Rede Bridge Isolada (`agrosync-net`):** Comunicação interna segura entre os serviços conteinerizados.
+4. **Docker Engine & Rede Bridge Isolada (`agronet`):** Comunicação interna segura entre os serviços conteinerizados.
 5. **Container da Aplicação (`agrosync-api`):** Build multi-stage (Maven + Eclipse Temurin JRE 21), rodando em background (`-d`), com `WORKDIR /app`, usuário sem privilégios de root (`USER app`), variáveis de ambiente e `HEALTHCHECK` ativo na porta `8080`.
 6. **Container do Banco de Dados (`agrosync-db`):** PostgreSQL 16 rodando em background com porta `5432` configurada, variáveis de ambiente e **volume nomeado** (`pgdata`) garantindo persistência dos dados mesmo após a recriação do container.
 
@@ -45,13 +45,13 @@ O **AgroSync** é uma plataforma CitizenTech voltada ao registro, monitoramento 
 ```text
 04-devops/
 ├── docs/
-│   └── arquitetura.png          # Diagrama oficial da arquitetura (Azure + Docker)
+│   └── DiagramaDevops-GS.drawio.png          # Diagrama oficial da arquitetura (Azure + Docker)
 ├── scripts/
 │   ├── azure-provision.sh       # Script Azure CLI para criação do RG, VM e abertura de porta
 │   └── cleanup.sh               # Script Azure CLI para destruição completa dos recursos
 ├── src/                         # Código-fonte da API Java 21 / Spring Boot (CRUD + Relacionamentos)
 ├── .dockerignore                # Exclusão de arquivos desnecessários no contexto de build
-├── .env.example                 # Template de variáveis de ambiente (sem dados sensíveis)
+├── .env.example                 # Template de variáveis de ambiente (valores de exemplo: use valores próprios no .env)
 ├── .gitignore                   # Proteção contra versionamento de .env e target/
 ├── docker-compose.yml           # Orquestração dos containers (api + db), network, volumes e healthcheck
 ├── Dockerfile                   # Build multi-stage com usuário não-root (app), WORKDIR e ENV
@@ -120,7 +120,7 @@ exit
 
 ### 3. Clonar o Repositório e Configurar Variáveis de Ambiente
 ```bash
-git clone https://github.com/alanchristophermiranda2005-coder/Global-Solution-2026-CitizenTech-.git
+git clone https://github.com/sena-guilherme/Global-Solution-2026-CitizenTech-.git
 cd Global-Solution-2026-CitizenTech-/04-devops
 
 # Criar arquivo .env a partir do template e definir DB_PASSWORD e JWT_SECRET
@@ -174,7 +174,7 @@ docker exec -it agrosync-api ls -la
 ```bash
 # Acesso ao container do banco e consulta às tabelas populadas pelo CRUD
 docker exec -it agrosync-db psql -U agrosync -d agrosync -c "\dt"
-docker exec -it agrosync-db psql -U agrosync -d agrosync -c "SELECT * FROM usuario;"
+docker exec -it agrosync-db psql -U agrosync -d agrosync -c "SELECT * FROM produtor;"
 docker exec -it agrosync-db psql -U agrosync -d agrosync -c "SELECT * FROM area;"
 ```
 
